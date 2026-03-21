@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Crush² 搜索引擎 | 权威学术 vs 垃圾屎坑</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, 'Segoe UI', 'Comic Neue', 'Poppins', 'Inter', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(145deg, #fff0f5 0%, #ffe4ec 100%);
+            min-height: 100vh;
+            padding: 2rem 1.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 主容器 */
+        .crush-engine {
+            max-width: 1000px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(2px);
+            border-radius: 3rem;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 105, 180, 0.3);
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+
+        /* 头部无厘头区域 */
+        .hero {
+            background: #ffb7c5;
+            padding: 1.5rem 2rem;
+            text-align: center;
+            border-bottom: 6px dashed #ff6f91;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            color: #2d1b2e;
+            text-shadow: 3px 3px 0 #ffdf6b;
+            word-break: keep-all;
+        }
+
+        .hero h1 span {
+            display: inline-block;
+            transform: rotate(4deg);
+            background: #fff2b5;
+            padding: 0 12px;
+            border-radius: 60px;
+        }
+
+        .tagline {
+            font-size: 1rem;
+            margin-top: 8px;
+            color: #4a2a3a;
+            font-weight: 600;
+            background: #fff0d6;
+            display: inline-block;
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+        }
+
+        /* 搜索框区域 */
+        .search-area {
+            padding: 2rem 2rem 1rem;
+            background: #fff9fc;
+        }
+
+        .input-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            background: white;
+            border-radius: 100px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+            border: 1px solid #ffbfcf;
+            padding: 5px;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 1rem 1.5rem;
+            font-size: 1.1rem;
+            border: none;
+            outline: none;
+            background: transparent;
+            font-weight: 500;
+            color: #2d1b2e;
+        }
+
+        .input-group input::placeholder {
+            color: #ff9ab3;
+            font-style: italic;
+        }
+
+        .input-group button {
+            background: #ff8aa8;
+            border: none;
+            padding: 0 2rem;
+            border-radius: 60px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .input-group button:hover {
+            background: #ff6a8e;
+            transform: scale(0.97);
+        }
+
+        /* 模式切换 Toggle 双雄 */
+        .mode-toggler {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+            justify-content: center;
+        }
+
+        .mode-btn {
+            flex: 1;
+            text-align: center;
+            padding: 0.9rem 0.5rem;
+            border-radius: 60px;
+            font-weight: 800;
+            font-size: 1.2rem;
+            cursor: pointer;
+            background: #f2e3e8;
+            border: 2px solid transparent;
+            transition: all 0.2s cubic-bezier(0.2, 1.2, 0.8, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            letter-spacing: 1px;
+        }
+
+        .mode-btn.authority {
+            background: #d9e8ff;
+            color: #0057b3;
+            border-color: #a0c4ff;
+        }
+
+        .mode-btn.shit {
+            background: #ffe0c4;
+            color: #a55217;
+            border-color: #ffb882;
+        }
+
+        .mode-btn.active {
+            transform: scale(1.02);
+            box-shadow: 0 8px 18px rgba(0,0,0,0.15);
+        }
+
+        .mode-btn.authority.active {
+            background: #2a6fdb;
+            color: white;
+            border-color: #ffffff;
+            box-shadow: 0 0 0 3px #ffb7c5;
+        }
+
+        .mode-btn.shit.active {
+            background: #c96f0e;
+            color: #fff3e0;
+            border-color: #ffd966;
+        }
+
+        /* 搜索结果容器 */
+        .results-container {
+            padding: 1rem 2rem 2rem;
+            background: #fffbfd;
+            border-top: 2px dotted #ffccd9;
+        }
+
+        .result-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 1.2rem;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .badge-mode {
+            background: #ffe0e7;
+            padding: 0.3rem 1rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .warning-shit {
+            background: #f7d44a;
+            color: #5e2a00;
+            border-radius: 30px;
+            padding: 0.2rem 0.9rem;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .result-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* 通用卡片风格 */
+        .result-card {
+            background: white;
+            border-radius: 28px;
+            padding: 1.3rem 1.5rem;
+            transition: all 0.2s;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.03);
+            border-left: 12px solid;
+        }
+
+        /* 权威卡片 */
+        .authority-card {
+            border-left-color: #2a6fdb;
+            background: linear-gradient(135deg, #ffffff, #f7f9ff);
+        }
+        .authority-card .card-title {
+            color: #1f509e;
+            font-weight: 800;
+            font-size: 1.2rem;
+        }
+        .citation-meta {
+            font-size: 0.75rem;
+            color: #4b6e9e;
+            margin: 6px 0;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        /* 垃圾卡片 —— 完全污染风格 */
+        .shit-card {
+            border-left-color: #e68a2e;
+            background: #fff6ea;
+            box-shadow: 0 6px 12px rgba(232, 120, 0, 0.15);
+        }
+        .shit-card .card-title {
+            color: #b45f1b;
+            font-weight: 800;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .shit-source {
+            font-size: 0.7rem;
+            background: #ffe2c1;
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 30px;
+            font-family: monospace;
+            margin-top: 6px;
+        }
+
+        .snippet {
+            margin: 10px 0;
+            line-height: 1.45;
+            color: #2c2c2c;
+        }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 0.7rem;
+            color: #bc8f9f;
+            border-top: 1px dashed #ffcddb;
+            padding-top: 1.2rem;
+        }
+
+        @media (max-width: 650px) {
+            body {
+                padding: 1rem;
+            }
+            .hero h1 {
+                font-size: 1.7rem;
+            }
+            .mode-btn {
+                font-size: 0.9rem;
+                gap: 6px;
+            }
+            .input-group button {
+                padding: 0 1rem;
+                font-size: 1rem;
+            }
+            .results-container {
+                padding: 1rem;
+            }
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        .random-suggestion {
+            background: none;
+            border: none;
+            color: #ff88aa;
+            font-weight: bold;
+            font-size: 0.75rem;
+            text-decoration: underline;
+            margin-left: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="crush-engine">
+    <div class="hero">
+        <h1>
+            💘 CRUSH² 引擎 💩
+            <span>权威✨ vs 屎坑🤡</span>
+        </h1>
+        <div class="tagline">“自我意识暴揍恋爱脑” 或 “垃圾堆里找真爱” — 随你切换！</div>
+    </div>
+
+    <div class="search-area">
+        <div class="input-group">
+            <input type="text" id="searchInput" placeholder="例如：暗恋的人突然点赞｜自我意识过剩｜crush不理我怎么办？" value="crush时失去自我意识">
+            <button id="searchBtn">🔍 无脑搜索</button>
+        </div>
+
+        <!-- 双模式切换 权威 vs 垃圾数据库 -->
+        <div class="mode-toggler">
+            <div id="authorityModeBtn" class="mode-btn authority active">
+                🧠📚 高引用·权威数据库 <span style="font-size:0.8rem;">(Nature/SCI级)</span>
+            </div>
+            <div id="shitModeBtn" class="mode-btn shit">
+                💩🧻 污染垃圾数据库 <span style="font-size:0.8rem;">(Shitpost/粪坑网)</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="results-container" id="resultsContainer">
+        <div class="result-stats">
+            <div class="badge-mode" id="modeBadge">🔬 当前模式：权威学术高引模式</div>
+            <div id="extraWarning" style="font-size:0.7rem;"></div>
+        </div>
+        <div id="resultList" class="result-list">
+            <!-- 动态结果渲染到这里 -->
+            <div style="text-align: center; padding: 40px; color: #ff99b4;">✨ 点击搜索 or 敲击回车，开启 crush 玄学之旅 ✨</div>
+        </div>
+        <div class="footer-note">
+            ⚠️ 权威数据来自模拟《恋爱神经科学评论》《自我意识顶刊》等高IF期刊；垃圾数据来自「屎坑论坛·恋爱脑版块」<br>
+            🎭 本网站仅供无厘头娱乐，crush请保持理智 (或者不理智也行)
+        </div>
+    </div>
+</div>
+
+<script>
+    // ---------- 核心模拟数据库 ----------
+    // 权威模式：高引用学术风格 (全部围绕自我意识 & 恋爱 crush)
+    // 垃圾模式：shit网站风格，充满胡说八道，馊主意，低俗梗
+    
+    // 辅助：防止XSS
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+            return c;
+        });
+    }
+
+    // ---------- 权威数据库生成器 (高引用，期刊，学者，严谨但带点幽默的学术腔) ----------
+    function generateAuthorityResults(query) {
+        if (!query.trim()) query = "自我意识与恋爱冲动";
+        const safeQuery = escapeHtml(query.trim());
+        // 权威结果一般固定返回3~4条高引用级研究，但动态嵌入搜索词
+        return [
+            {
+                title: `📖 《Journal of Personality and Social Psychology》高引论文：关于“${safeQuery}”的元分析`,
+                snippet: `研究者Finkel等人(2024, 引用数 1,247) 发现，自我意识清晰度与crush满意度呈显著正相关(r=0.42, p<0.001)。当个体在暗恋中保持高自我概念清晰度，关系转化成功率提升73%。该研究被引为“恋爱自我意识黄金准则”。`,
+                citation: `Finkel, E.J., & Eastwick, P.W. (2024). Self-concept clarity and romantic infatuation: A meta-analysis. JPSP, 126(3), 411-429. 被引次数: 1247 | 影响因子: 9.8`
+            },
+            {
+                title: `🧠 神经科学快报(Nature Neuroscience Reviews)：Crush 的脑成像与自我边界的溶解`,
+                snippet: `针对关键词“${safeQuery}”，fMRI研究显示当人们经历强烈crush时，前额叶自我调控区域与腹侧被盖区多巴胺通路呈现拮抗模式(引用342次)。权威结论：成熟的自我意识可以预防“恋爱脑”导致的决策失误，保持crush健康度。`,
+                citation: `Cacioppo, S., & Bianchi-Demicheli, F. (2023). The neural basis of limerence and self-other distinction. Nat. Rev. Neurosci, 24(7), 402-417. 高被引论文`
+            },
+            {
+                title: `✨ 《Annual Review of Psychology》年度综述：自我扩张模型与浪漫吸引力中的“Crush机制”`,
+                snippet: `基于Aron & Aron (2023) 的自我扩张理论，针对“${safeQuery}”情境，crush本质上是个体将他人纳入自我概念的快速尝试。高引用证据：自我意识强的人更容易识别“理想化投射”，避免陷入单相思耗竭状态。引用数: 893`,
+                citation: `Aron, A., Lewandowski, G. W. (2023). Inclusion of Other in the Self and the expansion of the self. Annu. Rev. Psychol, 74, 213-239. 顶级期刊`
+            },
+            {
+                title: `🎓 哈佛恋爱心理学手册 (Harvard Crimson Press) ：面对crush时的自我调节策略`,
+                snippet: `针对“${safeQuery}”，心理学教授团队提出“观察性自我”技术——不被自动化的crush思绪绑架。该手册已被引用超过560次，为临床咨询师常用干预模版。权威建议：正念练习提升恋爱中的自我意识。`,
+                citation: `Gilbert, P., & Tirch, D. (2024). Compassion focused therapy for romantic obsessions. 哈佛大学心理治疗研究丛书, 第8章, 引用560次.`
+            }
+        ];
+    }
+
+    // ---------- 垃圾数据库生成器 (屎坑网站，污染数据，搞笑无厘头，恋爱脑残建议) ----------
+    function generateShitResults(query) {
+        if (!query.trim()) query = "crush";
+        const safeQuery = escapeHtml(query.trim());
+        // 污染数据池子 - 极具shit风格
+        const shitSources = [
+            { name: "💩 恋爱脑残百科 · 屎坑认证", url: "http://shit-love-dump.com/crush" },
+            { name: "🤡 贴吧【恋爱脑吧】热帖", url: "http://tieba-shitpost.crush" },
+            { name: "🔥 抖音沙雕恋爱博主「狗头军师」", url: "http://douyin-shit.crush/love" },
+            { name: "🧻 垃圾堆恋爱宝典 · 每日瞎编", url: "http://poop.love/secret" },
+            { name: "💀 Reddit shitposting 版块", url: "http://reddit.com/r/shitlove" }
+        ];
+
+        // 随机取不同source
+        return [
+            {
+                title: `💩【屎坑头条】关于“${safeQuery}”的惊天发现：越没自我意识，crush成功率越高！`,
+                snippet: `根据“垃圾堆恋爱研究院”对1000个恋爱脑的调查，只要你彻底放弃自我、每天发60条消息、偷看对方ins 50次，crush就会爱上你！权威屎坑砖家“狗剩”表示：“舔狗舔到最后应有尽有！” 此帖获赞-2000，踩踏数999+。`,
+                source: shitSources[0].name + " · 烂番茄指数 0%",
+                shitMeter: "💩💩💩💩💩 污染指数满级"
+            },
+            {
+                title: `🧻【震惊！】“${safeQuery}”的终极解法：扎小人+意念控制大法`,
+                snippet: `来自远古屎坑网站“巫婆恋爱屋”独家秘方：买粉色蜡烛围着crush照片转圈，同时嘴里大喊“爱上我！失去自我！”。文章宣称“科学已被证明是假的，只有玄学能让crush跪舔”。已有308位傻白甜尝试并后悔，但网站说那是“心不诚”。`,
+                source: shitSources[1].name + " · 引用次数: -∞",
+                shitMeter: "🧠🧠🧠 智商税专区"
+            },
+            {
+                title: `🔥 恋爱脑白痴测试：关于“${safeQuery}”你是否已经是舔狗晚期？`,
+                snippet: `垃圾数据表明：如果你搜索“${safeQuery}”说明你已经彻底沦陷！建议立刻执行“30连call对方不接就撞墙”大法，或者去“shit论坛”发帖：我的crush拉屎不冲怎么办？点赞过百就会获得屎坑勋章！`,
+                source: shitSources[2].name + " · 纯属胡诌",
+                shitMeter: "🤡🤡🤡 人间喜剧"
+            },
+            {
+                title: `🚽 独家爆料！权威期刊都是假的，真道理在屎坑：${safeQuery} 核心秘籍 “别要脸”`,
+                snippet: `“自我意识？那是妨碍恋爱的最大毒瘤！” —— 屎坑网红“尿酱” 最新动态。只要放弃人格，变成恋爱挂件，crush就会怜悯你。该贴底下评论：“亲测有效，对方把我拉黑了但我觉得他是在考验我！” 垃圾数据指数五颗星。`,
+                source: shitSources[3].name + " · 零引用 负价值",
+                shitMeter: "🧻🧻🧻🧻 厕所读物"
+            },
+            {
+                title: `🍑 恋爱迷惑行为大赏：针对 “${safeQuery}” 最沙雕操作合集`,
+                snippet: `根据 shitpost 数据库排名第一的回复：半夜三点给crush发鬼图，然后说“我梦到你变成我的舔狗了”。或者每天送一包辣条并写上“你是我的屎壳郎”。这些歪门邪道被10000个沙雕网友收藏，自我意识？不存在的！`,
+                source: shitSources[4].name + " · 瞎编认证",
+                shitMeter: "💀💀💀 精神污染警告"
+            }
+        ];
+    }
+
+    // ---------- 当前模式: 'authority' 或者 'shit' ----------
+    let currentMode = 'authority';   // 默认权威高引用
+
+    // DOM 元素
+    const authorityBtn = document.getElementById('authorityModeBtn');
+    const shitBtn = document.getElementById('shitModeBtn');
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const resultListDiv = document.getElementById('resultList');
+    const modeBadge = document.getElementById('modeBadge');
+    const extraWarning = document.getElementById('extraWarning');
+
+    // 更新UI显示模式信息
+    function updateModeUI() {
+        if (currentMode === 'authority') {
+            authorityBtn.classList.add('active');
+            shitBtn.classList.remove('active');
+            modeBadge.innerHTML = '🔬📚 当前模式：高引用·权威数据库 (学术顶刊 / 高被引论文)';
+            extraWarning.innerHTML = '';
+        } else {
+            authorityBtn.classList.remove('active');
+            shitBtn.classList.add('active');
+            modeBadge.innerHTML = '💩🧻 当前模式：污染垃圾数据库 (屎坑论坛·恋爱脑专区)';
+            extraWarning.innerHTML = '<div class="warning-shit">⚠️ 警告：以下内容来自互联网垃圾场，全是胡说八道，请勿模仿！⚠️</div>';
+        }
+    }
+
+    // 渲染结果 (根据当前模式和关键词)
+    function performSearch() {
+        let query = searchInput.value.trim();
+        if (query === "") {
+            // 搞笑提示，但依然提供默认无厘头内容
+            query = "无意识的暗恋";
+            // 但我们仍然给用户一个提示但展示结果
+            resultListDiv.innerHTML = `<div style="background:#fff0e0; border-radius:2rem; padding:1rem; text-align:center">💢 你居然什么都没搜？那就帮你搜「${escapeHtml(query)}」吧！💢</div>`;
+            // 不过我们继续执行搜索，但先清除占位再展示正常结果
+        }
+        
+        // 防止XSS，但结果生成内部已经做了escapeHtml
+        let results = [];
+        if (currentMode === 'authority') {
+            results = generateAuthorityResults(query);
+        } else {
+            results = generateShitResults(query);
+        }
+
+        // 渲染卡片
+        if (!results || results.length === 0) {
+            resultListDiv.innerHTML = `<div class="result-card" style="text-align:center;">🧐 数据库走丢了？请再试一次~</div>`;
+            return;
+        }
+
+        let html = '';
+        for (let res of results) {
+            if (currentMode === 'authority') {
+                // 权威卡片样式
+                html += `
+                    <div class="result-card authority-card">
+                        <div class="card-title">${escapeHtml(res.title)}</div>
+                        <div class="citation-meta">
+                            📚 ${escapeHtml(res.citation)}
+                        </div>
+                        <div class="snippet">
+                            ${escapeHtml(res.snippet)}
+                        </div>
+                        <div style="font-size:0.7rem; margin-top:8px; color:#5e7b9e;">🏆 高被引标志 · 同行评议认证</div>
+                    </div>
+                `;
+            } else {
+                // 垃圾卡片 屎坑风
+                html += `
+                    <div class="result-card shit-card">
+                        <div class="card-title">
+                            💩 ${escapeHtml(res.title)} 
+                            <span style="font-size:0.7rem;">${escapeHtml(res.shitMeter || '💀毒性MAX')}</span>
+                        </div>
+                        <div class="snippet">
+                            ${escapeHtml(res.snippet)}
+                        </div>
+                        <div class="shit-source">
+                            🗑️ 来源: ${escapeHtml(res.source)} 
+                        </div>
+                        <div style="font-size:0.7rem; margin-top:8px; color:#b87333; display:flex; gap: 8px;">
+                            🚽 垃圾评分: ⭐ (0.0/5) &nbsp;|&nbsp; 🧻 踩数: 9999+
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        // 增加无厘头搞笑小尾巴
+        if (currentMode === 'shit') {
+            html += `<div style="margin-top: 10px; text-align: center; font-size: 0.75rem; background:#fff1c1; border-radius: 20px; padding: 8px;">💩 以上数据由「ShitPost™ 恋爱粪坑实验室」提供，每看一条，智商-1 💩</div>`;
+        } else {
+            html += `<div style="margin-top: 10px; text-align: center; font-size: 0.75rem; color:#8eaccf;">✨ 基于模拟高引数据库·Crush与自我意识权威快报 ✨ 严肃学者都在看</div>`;
+        }
+        resultListDiv.innerHTML = html;
+    }
+
+    // 切换模式时重新搜索 (保留当前关键词)
+    function setMode(mode) {
+        if (mode === currentMode) return;
+        currentMode = mode;
+        updateModeUI();
+        performSearch();  // 重新搜索，展现新模式的数据库内容
+    }
+
+    // 事件绑定
+    authorityBtn.addEventListener('click', () => setMode('authority'));
+    shitBtn.addEventListener('click', () => setMode('shit'));
+    searchBtn.addEventListener('click', () => performSearch());
+    searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            performSearch();
+        }
+    });
+
+    // 额外增加趣味：随机无厘头关键词建议 (小彩蛋)
+    const randomSuggestions = [
+        "crush把我当空气", "自我意识过剩怎么破", "暗恋的玄学", "恋爱脑自救指南", 
+        "屎坑爱情故事", "如何科学crush", "舔狗与自我价值", "荣格谈恋爱投射"
+    ];
+    const randomBtn = document.createElement('button');
+    randomBtn.textContent = '🎲 随机沙雕词';
+    randomBtn.classList.add('random-suggestion');
+    randomBtn.style.cursor = 'pointer';
+    const inputWrapper = document.querySelector('.input-group');
+    if (inputWrapper) {
+        randomBtn.addEventListener('click', () => {
+            const rand = randomSuggestions[Math.floor(Math.random() * randomSuggestions.length)];
+            searchInput.value = rand;
+            performSearch();
+        });
+        inputWrapper.appendChild(randomBtn);
+    }
+
+    // 初始化加载页面自动搜索一次 (默认权威模式，展示关键词初始值)
+    window.addEventListener('DOMContentLoaded', () => {
+        updateModeUI();
+        performSearch();  // 默认用 input 初始值 “crush时失去自我意识”
+    });
+</script>
+</body>
+</html>
